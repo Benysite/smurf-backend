@@ -39,15 +39,14 @@ router.get("/:playerName", async (req, res) => {
 });
 
 //
-// 4) Vérification Anti-Smurf
+// 4) Anti-smurf check
 //
 router.get("/:playerName/smurf-check", async (req, res) => {
   try {
     const playerName = req.params.playerName;
-
     const stats = await PlayerStat.find({ playerName });
 
-    if (stats.length === 0) {
+    if (!stats.length) {
       return res.json({ success: true, message: "Aucune donnée trouvée" });
     }
 
@@ -57,7 +56,7 @@ router.get("/:playerName/smurf-check", async (req, res) => {
 
     const kd = avgDeaths === 0 ? avgKills : avgKills / avgDeaths;
 
-    const suspicionScore =
+    let suspicionScore =
       (kd > 5 ? 30 : 0) +
       (kd > 10 ? 30 : 0) +
       (avgScore > 800 ? 20 : 0) +
@@ -67,20 +66,12 @@ router.get("/:playerName/smurf-check", async (req, res) => {
     if (suspicionScore >= 80) verdict = "highly_smurf";
     else if (suspicionScore >= 50) verdict = "likely_smurf";
 
-    const reasons = [];
-    if (kd > 5) reasons.push("KD anormalement élevé");
-    if (kd > 10) reasons.push("KD extrêmement élevé");
-    if (avgScore > 800) reasons.push("Score moyen très élevé");
-    if (avgKills > 40) reasons.push("Kills moyens élevés");
-
     res.json({
       success: true,
       player: playerName,
-      statsCount: stats.length,
       averages: { avgKills, avgDeaths, avgScore, kd },
       suspicionScore,
       verdict,
-      reasons,
       history: stats
     });
 
@@ -95,11 +86,10 @@ router.get("/:playerName/smurf-check", async (req, res) => {
 router.get("/leaderboard/global", async (req, res) => {
   try {
     const players = await PlayerStat.distinct("playerName");
-    const results = [];
+    const out = [];
 
     for (const player of players) {
       const stats = await PlayerStat.find({ playerName: player });
-
       if (!stats.length) continue;
 
       const avgKills = stats.reduce((a, b) => a + b.kills, 0) / stats.length;
@@ -117,7 +107,7 @@ router.get("/leaderboard/global", async (req, res) => {
       if (suspicion >= 30) verdict = "maybe_smurf";
       if (suspicion >= 50) verdict = "likely_smurf";
 
-      results.push({
+      out.push({
         player,
         kd: Number(kd.toFixed(2)),
         avgScore: Math.round(avgScore),
@@ -126,9 +116,7 @@ router.get("/leaderboard/global", async (req, res) => {
       });
     }
 
-    results.sort((a, b) => b.suspicion - a.suspicion);
-
-    res.json({ success: true, leaderboard: results });
+    res.json({ success: true, leaderboard: out.sort((a, b) => b.suspicion - a.suspicion) });
 
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -136,11 +124,11 @@ router.get("/leaderboard/global", async (req, res) => {
 });
 
 //
-// 6) Leaderboard smurf score
+// 6) Leaderboard smurf
 //
 router.get("/leaderboard/smurf", async (req, res) => {
   try {
-    const byPlayer = await PlayerStat.aggregate([
+    const agg = await PlayerStat.aggregate([
       {
         $group: {
           _id: "$playerName",
@@ -152,7 +140,7 @@ router.get("/leaderboard/smurf", async (req, res) => {
       }
     ]);
 
-    const ranked = byPlayer.map(p => {
+    const ranked = agg.map(p => {
       const kd = p.avgDeaths === 0 ? p.avgKills : p.avgKills / p.avgDeaths;
 
       let suspicion = 0;
@@ -178,31 +166,14 @@ router.get("/leaderboard/smurf", async (req, res) => {
     }).sort((a, b) => b.suspicionScore - a.suspicionScore);
 
     res.json({ success: true, players: ranked });
-
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
 });
 
 //
-// 7) Liste des joueurs
+// 7) Leaderboard ALL (KD / kills / score)
 //
-router.get("/players/list", async (req, res) => {
-  try {
-    const names = await PlayerStat.distinct("playerName");
-    res.json({
-      success: true,
-      players: names.filter(Boolean).sort()
-    });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-module.exports = router;
-// -----------------------------------
-// LEADERBOARD : KD / Score / Kills
-// -----------------------------------
 router.get("/leaderboard/all", async (req, res) => {
   try {
     const players = await PlayerStat.aggregate([
@@ -237,3 +208,5 @@ router.get("/leaderboard/all", async (req, res) => {
   }
 });
 
+// 🚀 EXPORT — TOUT À LA FIN
+module.exports = router;
