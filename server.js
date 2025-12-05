@@ -4,7 +4,15 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 
 const app = express();
-app.use(cors());
+
+// CORS pour GitHub Pages + local
+app.use(cors({
+  origin: [
+    "https://benysite.github.io",
+    "http://localhost:3001"
+  ]
+}));
+
 app.use(express.json());
 
 // Pour éviter les warnings / crash Render
@@ -13,7 +21,7 @@ mongoose.set("strictQuery", false);
 // Vérification de la variable Mongo
 if (!process.env.MONGO_URI) {
   console.error("❌ ERREUR : variable MONGO_URI manquante !");
-  process.exit(1);  // Stoppe Render proprement
+  process.exit(1);
 }
 
 // Connexion MongoDB
@@ -34,7 +42,7 @@ app.get("/", (req, res) => {
   res.send("Backend OK 🚀");
 });
 
-// Render impose son propre PORT → obligatoire
+// Render impose son propre PORT
 const PORT = process.env.PORT || 3001;
 
 app.listen(PORT, "0.0.0.0", () => {
