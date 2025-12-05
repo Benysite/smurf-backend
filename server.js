@@ -40,6 +40,14 @@ app.get("/", (req, res) => {
   res.send("Backend OK 🚀");
 });
 
+// 🔥 Debug : afficher toutes les routes
+console.log(
+  "Routes chargées →",
+  app._router.stack
+    .filter(r => r.route)
+    .map(r => r.route.path)
+);
+
 // Render impose son propre PORT → obligatoire
 const PORT = process.env.PORT || 3001;
 
