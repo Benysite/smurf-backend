@@ -32,7 +32,7 @@ mongoose
   });
 
 // Import des routes
-const statsRoutes = require("./itinéraires/stats");
+const statsRoutes = require("./routes/stats");
 app.use("/stats", statsRoutes);
 
 // Route de test
@@ -46,16 +46,3 @@ const PORT = process.env.PORT || 3001;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Serveur lancé sur le port ${PORT}`);
 });
-
-// Route de test
-app.get("/", (req, res) => {
-  res.send("Backend OK 🚀");
-});
-
-// Render impose son propre PORT → obligatoire
-const PORT = process.env.PORT || 3001;
-
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Serveur lancé sur le port ${PORT}`);
-});
-
