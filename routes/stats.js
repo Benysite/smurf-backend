@@ -73,7 +73,7 @@ router.get("/leaderboard/global", async (req, res) => {
       });
     }
 
-    res.json({ success: true, leaderboard: out.sort((a,b)=>b.suspicion-a.suspicion) });
+    res.json({ success: true, leaderboard: out.sort((a, b) => b.suspicion - a.suspicion) });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -96,33 +96,34 @@ router.get("/leaderboard/smurf", async (req, res) => {
       }
     ]);
 
-    const ranked = agg.map(p => {
-      const kd = p.avgDeaths === 0 ? p.avgKills : p.avgKills / p.avgDeaths;
+    const ranked = agg
+      .map(p => {
+        const kd = p.avgDeaths === 0 ? p.avgKills : p.avgKills / p.avgDeaths;
 
-      let suspicion = 0;
-      if (kd > 3) suspicion += 30;
-      if (kd > 5) suspicion += 20;
-      if (p.avgScore > 800) suspicion += 20;
-      if (p.avgKills > 40) suspicion += 20;
+        let suspicion = 0;
+        if (kd > 3) suspicion += 30;
+        if (kd > 5) suspicion += 20;
+        if (p.avgScore > 800) suspicion += 20;
+        if (p.avgKills > 40) suspicion += 20;
 
-      let verdict = "clean";
-      if (suspicion >= 70) verdict = "likely_smurf";
-      else if (suspicion >= 40) verdict = "suspect";
+        let verdict = "clean";
+        if (suspicion >= 70) verdict = "likely_smurf";
+        else if (suspicion >= 40) verdict = "suspect";
 
-      return {
-        player: p._id,
-        games: p.games,
-        kd: +kd.toFixed(2),
-        avgKills: +p.avgKills.toFixed(1),
-        avgDeaths: +p.avgDeaths.toFixed(1),
-        avgScore: +p.avgScore.toFixed(0),
-        suspicionScore: suspicion,
-        verdict
-      };
-    }).sort((a, b) => b.suspicionScore - a.suspicionScore);
+        return {
+          player: p._id,
+          games: p.games,
+          kd: +kd.toFixed(2),
+          avgKills: +p.avgKills.toFixed(1),
+          avgDeaths: +p.avgDeaths.toFixed(1),
+          avgScore: +p.avgScore.toFixed(0),
+          suspicionScore: suspicion,
+          verdict
+        };
+      })
+      .sort((a, b) => b.suspicionScore - a.suspicionScore);
 
     res.json({ success: true, players: ranked });
-
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -141,7 +142,7 @@ router.get("/player/:playerName", async (req, res) => {
 });
 
 // ------------------------------------------------------------
-// 7) Smurf-check
+// 7) Smurf-check (corrigé + reasons ajoutés)
 // ------------------------------------------------------------
 router.get("/player/:playerName/smurf-check", async (req, res) => {
   try {
@@ -167,12 +168,20 @@ router.get("/player/:playerName/smurf-check", async (req, res) => {
     if (suspicionScore >= 80) verdict = "highly_smurf";
     else if (suspicionScore >= 50) verdict = "likely_smurf";
 
+    // 🔥 RAISONS envoyées au front
+    const reasons = [];
+    if (kd > 5) reasons.push("KD anormalement élevé");
+    if (kd > 10) reasons.push("KD extrêmement élevé");
+    if (avgScore > 800) reasons.push("Score moyen très élevé");
+    if (avgKills > 40) reasons.push("Kills moyens élevés");
+
     res.json({
       success: true,
       player: playerName,
       averages: { avgKills, avgDeaths, avgScore, kd },
       suspicionScore,
       verdict,
+      reasons,
       history: stats
     });
 
