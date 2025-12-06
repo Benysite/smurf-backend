@@ -1,5 +1,3 @@
-
-
 const express = require("express");
 const axios = require("axios");
 const router = express.Router();
@@ -94,15 +92,9 @@ router.get("/match/:matchId", async (req, res) => {
     }
 });
 
-module.exports = router;
 // ============================
 // 5️⃣ LEVEL DU JOUEUR (VALORANT)
 // ============================
-//
-// Endpoint :
-// GET /val/account-xp/v1/players/{puuid}
-// ============================
-
 router.get("/level/:puuid", async (req, res) => {
     const { puuid } = req.params;
 
@@ -120,4 +112,8 @@ router.get("/level/:puuid", async (req, res) => {
         });
     }
 });
+
+// ============================
+// EXPORT FINAL UNIQUE
+// ============================
 module.exports = router;
