@@ -2,9 +2,9 @@ const express = require("express");
 const router = express.Router();
 const PlayerStat = require("../models/PlayerStat");
 
-//
+// ------------------------------------------------------------
 // 1) Ajouter une stat
-//
+// ------------------------------------------------------------
 router.post("/add", async (req, res) => {
   try {
     const stat = await PlayerStat.create(req.body);
@@ -14,9 +14,9 @@ router.post("/add", async (req, res) => {
   }
 });
 
-//
-// 2) Obtenir toutes les stats
-//
+// ------------------------------------------------------------
+// 2) Toutes les stats
+// ------------------------------------------------------------
 router.get("/", async (req, res) => {
   try {
     const stats = await PlayerStat.find();
@@ -26,24 +26,21 @@ router.get("/", async (req, res) => {
   }
 });
 
-//
+// ------------------------------------------------------------
 // 3) Liste des joueurs
-//
+// ------------------------------------------------------------
 router.get("/players/list", async (req, res) => {
   try {
     const names = await PlayerStat.distinct("playerName");
-    res.json({
-      success: true,
-      players: names.filter(Boolean).sort()
-    });
+    res.json({ success: true, players: names.filter(Boolean).sort() });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
 });
 
-//
-// 4) Leaderboard global
-//
+// ------------------------------------------------------------
+// 4) Leaderboard ─ GLOBAL
+// ------------------------------------------------------------
 router.get("/leaderboard/global", async (req, res) => {
   try {
     const players = await PlayerStat.distinct("playerName");
@@ -56,7 +53,6 @@ router.get("/leaderboard/global", async (req, res) => {
       const avgKills = stats.reduce((a, b) => a + b.kills, 0) / stats.length;
       const avgDeaths = stats.reduce((a, b) => a + b.deaths, 0) / stats.length;
       const avgScore = stats.reduce((a, b) => a + b.score, 0) / stats.length;
-
       const kd = avgDeaths === 0 ? avgKills : avgKills / avgDeaths;
 
       let suspicion = 0;
@@ -77,19 +73,15 @@ router.get("/leaderboard/global", async (req, res) => {
       });
     }
 
-    res.json({
-      success: true,
-      leaderboard: out.sort((a, b) => b.suspicion - a.suspicion)
-    });
-
+    res.json({ success: true, leaderboard: out.sort((a,b)=>b.suspicion-a.suspicion) });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
 });
 
-//
-// 5) Leaderboard smurf
-//
+// ------------------------------------------------------------
+// 5) Leaderboard ─ SMURF SCORE
+// ------------------------------------------------------------
 router.get("/leaderboard/smurf", async (req, res) => {
   try {
     const agg = await PlayerStat.aggregate([
@@ -136,49 +128,10 @@ router.get("/leaderboard/smurf", async (req, res) => {
   }
 });
 
-//
-// 6) Leaderboard ALL
-//
-router.get("/leaderboard/all", async (req, res) => {
-  try {
-    const players = await PlayerStat.aggregate([
-      {
-        $group: {
-          _id: "$playerName",
-          avgKills: { $avg: "$kills" },
-          avgDeaths: { $avg: "$deaths" },
-          avgScore: { $avg: "$score" },
-          games: { $sum: 1 }
-        }
-      }
-    ]);
-
-    const leaderboard = players.map(p => ({
-      player: p._id,
-      kd: p.avgDeaths === 0 ? p.avgKills : p.avgKills / p.avgDeaths,
-      avgKills: p.avgKills,
-      avgScore: p.avgScore,
-      games: p.games
-    }));
-
-    res.json({
-      success: true,
-      kd: [...leaderboard].sort((a, b) => b.kd - a.kd),
-      kills: [...leaderboard].sort((a, b) => b.avgKills - a.avgKills),
-      score: [...leaderboard].sort((a, b) => b.avgScore - a.avgScore)
-    });
-
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-//
-// 🚨 7) ROUTES PARAMÉTRÉES — TOUT À LA FIN
-//
-
-// Stats d’un joueur
-router.get("/:playerName", async (req, res) => {
+// ------------------------------------------------------------
+// 6) Stats d’un joueur
+// ------------------------------------------------------------
+router.get("/player/:playerName", async (req, res) => {
   try {
     const stats = await PlayerStat.find({ playerName: req.params.playerName });
     res.json({ success: true, stats });
@@ -187,8 +140,10 @@ router.get("/:playerName", async (req, res) => {
   }
 });
 
-// Smurf check (CORRIGÉ)
-router.get("/smurf-check/:playerName", async (req, res) => {
+// ------------------------------------------------------------
+// 7) Smurf-check
+// ------------------------------------------------------------
+router.get("/player/:playerName/smurf-check", async (req, res) => {
   try {
     const playerName = req.params.playerName;
     const stats = await PlayerStat.find({ playerName });
@@ -200,7 +155,6 @@ router.get("/smurf-check/:playerName", async (req, res) => {
     const avgKills = stats.reduce((a, b) => a + b.kills, 0) / stats.length;
     const avgDeaths = stats.reduce((a, b) => a + b.deaths, 0) / stats.length;
     const avgScore = stats.reduce((a, b) => a + b.score, 0) / stats.length;
-
     const kd = avgDeaths === 0 ? avgKills : avgKills / avgDeaths;
 
     let suspicionScore =
