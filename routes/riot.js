@@ -1,10 +1,12 @@
+
+
 const express = require("express");
 const axios = require("axios");
 const router = express.Router();
 
 // Axios configuré pour Riot
 const riot = axios.create({
-    baseURL: "https://europe.api.riotgames.com",
+    baseURL: "https://eu.api.riotgames.com",
     headers: { "X-Riot-Token": process.env.RIOT_API_KEY }
 });
 
