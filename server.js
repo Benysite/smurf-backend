@@ -37,7 +37,7 @@ mongoose
     process.exit(1);
   });
 
-// ---- Routes ----
+// ---- ROUTES ----
 const statsRoutes = require("./routes/stats");
 app.use("/stats", statsRoutes);
 
