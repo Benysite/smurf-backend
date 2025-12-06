@@ -33,16 +33,16 @@ router.get("/analyze/:gameName/:tagLine", async (req, res) => {
 
         // ➤ Enregistrer / mettre à jour le joueur dans Mongo
         await Player.findOneAndUpdate(
-            { puuid },
-            {
-                puuid,
-                gameName: acc.data.gameName,
-                tagLine: acc.data.tagLine,
-                shard,
-                lastSeen: new Date()
-            },
-            { upsert: true, new: true }
-        );
+    { puuid },
+    {
+        puuid,
+        gameName: acc.data.gameName,
+        tagLine: acc.data.tagLine,
+        shard,
+        lastSeen: new Date()
+    },
+    { upsert: true, new: true }
+);
 
         // 2) LEVEL
         let level = null;
