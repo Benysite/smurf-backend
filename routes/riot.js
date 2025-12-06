@@ -30,7 +30,7 @@ router.get("/player/:gameName/:tagLine", async (req, res) => {
 });
 
 // ============================
-// 2️⃣ RANK DU JOUEUR (VALORANT)
+// 2️⃣ RANK DU JOUEUR (Valo)
 // ============================
 router.get("/rank/:puuid", async (req, res) => {
     const { puuid } = req.params;
@@ -51,7 +51,7 @@ router.get("/rank/:puuid", async (req, res) => {
 });
 
 // ============================
-// 3️⃣ MATCHLIST DU JOUEUR (VALORANT)
+// 3️⃣ MATCHLIST (liste des matchs)
 // ============================
 router.get("/matches/:puuid", async (req, res) => {
     const { puuid } = req.params;
@@ -72,7 +72,7 @@ router.get("/matches/:puuid", async (req, res) => {
 });
 
 // ============================
-// 4️⃣ MATCH COMPLET (VALORANT)
+// 4️⃣ MATCH COMPLET (détails)
 // ============================
 router.get("/match/:matchId", async (req, res) => {
     const { matchId } = req.params;
