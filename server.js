@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 
 const app = express();
 
-// ---- CORS propre ----
+// ---- CORS ----
 app.use(cors({
   origin: [
     "https://benysite.github.io",
@@ -19,7 +19,7 @@ app.use(cors({
 
 app.use(express.json());
 
-// ---- Fix Mongo warnings Render ----
+// ---- Fix Mongo warnings ----
 mongoose.set("strictQuery", false);
 
 // ---- Check MONGO_URI ----
@@ -52,9 +52,17 @@ app.get("/", (req, res) => {
   res.send("Backend OK 🚀");
 });
 
+// ---- DEBUG : voir joueurs en DB ----
+app.get("/debug/players", async (req, res) => {
+  const Player = require("./models/Player");
+  const list = await Player.find({}).lean();
+  res.json(list);
+});
+
 // ---- Render impose PORT ----
 const PORT = process.env.PORT || 3001;
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Serveur lancé sur le port ${PORT}`);
 });
+
