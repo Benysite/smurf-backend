@@ -32,18 +32,30 @@ router.get("/player/:gameName/:tagLine", async (req, res) => {
 // ============================
 // 2️⃣ RANK DU JOUEUR (Valo)
 // ============================
+// Version compatible DEV KEY & PROD KEY
 router.get("/rank/:puuid", async (req, res) => {
     const { puuid } = req.params;
 
     try {
-        const response = await riot.get(
-            `/val/ranked/v1/players/${puuid}`
-        );
+        const response = await riot.get(`/val/ranked/v1/players/${puuid}`);
 
-        res.json({ success: true, rank: response.data });
+        return res.json({
+            success: true,
+            rank: response.data,
+            source: "riot"
+        });
 
     } catch (err) {
-        res.status(500).json({
+
+        if (err.response?.status === 403) {
+            return res.json({
+                success: true,
+                rank: null,
+                source: "no-production-key"
+            });
+        }
+
+        return res.status(500).json({
             success: false,
             error: err.response?.data || err.message
         });
