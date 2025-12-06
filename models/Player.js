@@ -1,11 +1,11 @@
 const mongoose = require("mongoose");
 
-const PlayerStatSchema = new mongoose.Schema({
-  playerName: { type: String, required: false },
-  kills: { type: Number, default: 0 },
-  deaths: { type: Number, default: 0 },
-  score: { type: Number, default: 0 },
-  date: { type: Date, default: Date.now }
+const PlayerSchema = new mongoose.Schema({
+    puuid: { type: String, unique: true, required: true },
+    gameName: String,
+    tagLine: String,
+    shard: String,
+    lastSeen: Date
 });
 
-module.exports = mongoose.model("PlayerStat", PlayerStatSchema);
+module.exports = mongoose.model("Player", PlayerSchema);
