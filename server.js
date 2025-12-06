@@ -37,13 +37,15 @@ mongoose
     process.exit(1);
   });
 
-// ---- Import des routes ----
+// ---- Routes ----
 const statsRoutes = require("./routes/stats");
 app.use("/stats", statsRoutes);
 
-// ---- Import des routes Riot ----
 const riotRoutes = require("./routes/riot");
 app.use("/api/riot", riotRoutes);
+
+const analyzeRoutes = require("./routes/analyze");
+app.use("/api/riot", analyzeRoutes);
 
 // ---- Route test ----
 app.get("/", (req, res) => {
@@ -56,3 +58,6 @@ const PORT = process.env.PORT || 3001;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Serveur lancé sur le port ${PORT}`);
 });
+const { calculateSmurfScore } = require("./utils/smurfScore");
+
+console.log(
