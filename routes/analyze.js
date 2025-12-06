@@ -1,6 +1,7 @@
 const express = require("express");
 const axios = require("axios");
 const { calculateSmurfScore } = require("../utils/smurfScore");
+const Player = require("../models/Player");
 const router = express.Router();
 
 // Riot ID → toujours AMERICAS
@@ -29,6 +30,19 @@ router.get("/analyze/:gameName/:tagLine", async (req, res) => {
             `/riot/account/v1/accounts/by-riot-id/${gameName}/${tagLine}`
         );
         const puuid = acc.data.puuid;
+
+        // ➤ Enregistrer / mettre à jour le joueur dans Mongo
+        await Player.findOneAndUpdate(
+            { puuid },
+            {
+                puuid,
+                gameName: acc.data.gameName,
+                tagLine: acc.data.tagLine,
+                shard,
+                lastSeen: new Date()
+            },
+            { upsert: true, new: true }
+        );
 
         // 2) LEVEL
         let level = null;
