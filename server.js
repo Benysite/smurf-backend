@@ -41,6 +41,10 @@ mongoose
 const statsRoutes = require("./routes/stats");
 app.use("/stats", statsRoutes);
 
+// ---- Import des routes Riot ----
+const riotRoutes = require("./routes/riot");
+app.use("/api/riot", riotRoutes);
+
 // ---- Route test ----
 app.get("/", (req, res) => {
   res.send("Backend OK 🚀");
