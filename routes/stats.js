@@ -77,7 +77,10 @@ router.get("/leaderboard/global", async (req, res) => {
       });
     }
 
-    res.json({ success: true, leaderboard: out.sort((a,b)=>b.suspicion-a.suspicion) });
+    res.json({
+      success: true,
+      leaderboard: out.sort((a, b) => b.suspicion - a.suspicion)
+    });
 
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -103,8 +106,8 @@ router.get("/leaderboard/smurf", async (req, res) => {
 
     const ranked = agg.map(p => {
       const kd = p.avgDeaths === 0 ? p.avgKills : p.avgKills / p.avgDeaths;
-      let suspicion = 0;
 
+      let suspicion = 0;
       if (kd > 3) suspicion += 30;
       if (kd > 5) suspicion += 20;
       if (p.avgScore > 800) suspicion += 20;
@@ -152,7 +155,7 @@ router.get("/leaderboard/all", async (req, res) => {
 
     const leaderboard = players.map(p => ({
       player: p._id,
-      kd: p.avgDeaths === 0 ? p.avgKills : (p.avgKills / p.avgDeaths),
+      kd: p.avgDeaths === 0 ? p.avgKills : p.avgKills / p.avgDeaths,
       avgKills: p.avgKills,
       avgScore: p.avgScore,
       games: p.games
@@ -171,10 +174,10 @@ router.get("/leaderboard/all", async (req, res) => {
 });
 
 //
-// 🚨 7) ROUTES AVEC PARAMÈTRES — TOUT EN BAS
+// 🚨 7) ROUTES PARAMÉTRÉES — TOUT À LA FIN
 //
 
-// Stats d'un joueur
+// Stats d’un joueur
 router.get("/:playerName", async (req, res) => {
   try {
     const stats = await PlayerStat.find({ playerName: req.params.playerName });
@@ -184,8 +187,8 @@ router.get("/:playerName", async (req, res) => {
   }
 });
 
-// Smurf check
-router.get("/:playerName/smurf-check", async (req, res) => {
+// Smurf check (CORRIGÉ)
+router.get("/smurf-check/:playerName", async (req, res) => {
   try {
     const playerName = req.params.playerName;
     const stats = await PlayerStat.find({ playerName });
@@ -197,6 +200,7 @@ router.get("/:playerName/smurf-check", async (req, res) => {
     const avgKills = stats.reduce((a, b) => a + b.kills, 0) / stats.length;
     const avgDeaths = stats.reduce((a, b) => a + b.deaths, 0) / stats.length;
     const avgScore = stats.reduce((a, b) => a + b.score, 0) / stats.length;
+
     const kd = avgDeaths === 0 ? avgKills : avgKills / avgDeaths;
 
     let suspicionScore =
