@@ -95,3 +95,28 @@ router.get("/match/:matchId", async (req, res) => {
 });
 
 module.exports = router;
+// ============================
+// 5️⃣ LEVEL DU JOUEUR (VALORANT)
+// ============================
+//
+// Endpoint :
+// GET /val/account-xp/v1/players/{puuid}
+// ============================
+
+router.get("/level/:puuid", async (req, res) => {
+    const { puuid } = req.params;
+
+    try {
+        const response = await riot.get(
+            `/val/account-xp/v1/players/${puuid}`
+        );
+
+        res.json({ success: true, level: response.data });
+
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            error: err.response?.data || err.message
+        });
+    }
+});
